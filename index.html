@@ -85,6 +85,13 @@ input#q{margin-bottom:6px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}.two h4{margin:0 0 4px;font-size:12px;color:var(--mut)}
 .t.x td,.t.x th{white-space:nowrap}.t.x td.nm{white-space:normal;min-width:230px;max-width:340px}
 @media(max-width:700px){.two{grid-template-columns:1fr}.seg button{padding:9px 14px;font-size:13px}.chip{width:64px;height:64px}}
+
+td.n,th.n{display:table-cell}
+.pk{font-size:11px;font-weight:700;fill:var(--ink);direction:ltr}
+.stk{display:flex;height:14px;border-radius:9px;overflow:hidden;background:var(--trk)}.stk i{display:block;height:100%}
+.lgd{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--mut);margin-top:12px}.lgd i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px}.lgd b{color:var(--ink)}
+.eqc{display:grid;grid-template-columns:150px 1fr;gap:16px;align-items:center}
+@media(max-width:520px){.eqc{grid-template-columns:1fr}}
 </style></head><body>
 <header class="hero" id="hd"><div class="w"></div></header>
 <main class="w" id="mn">
@@ -111,7 +118,7 @@ function tgl(){const t=document.documentElement.dataset.theme=='dark'?'light':'d
 function lng(){const l=LG()=='ar'?'en':'ar';document.documentElement.lang=l;document.documentElement.dir=l=='ar'?'rtl':'ltr';try{localStorage.setItem('lg',l)}catch(e){}}
 const AR={riyadh:['الرياض','Riyadh'],qiddiya:['القدية','Qiddiya'],madina:['المدينة المنورة','Madinah'],jeddah:['جدة','Jeddah'],eastern:['المنطقة الشرقية','Eastern'],aseer:['المنطقة الجنوبية (عسير)','Southern (Aseer)'],northern:['المنطقة الشمالية','Northern'],qassim:['القصيم','Qassim'],other:['غير محدد','Unassigned']};
 const al=k=>bi(...(AR[k]||AR.other));
-const M=v=>{v=+v||0;const a=Math.abs(v);return(v<0?'-':'')+(a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(1)+'K':a.toFixed(0))};
+const M=v=>{v=+v||0;const a=Math.abs(v);return(v<0?'-':'')+(a>=1e9?(a/1e9).toFixed(2)+'B':a>=1e6?(a/1e6).toFixed(2)+'M':a>=1e3?(a/1e3).toFixed(1)+'K':a.toFixed(0))};
 const FM=v=>Math.round(+v||0).toLocaleString('en-US');
 const PC=v=>v==null||!isFinite(v)?'—':(v*100).toFixed(1)+'%';
 const dt=s=>s?new Date(s+'T12:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'}):'—';
@@ -154,16 +161,29 @@ const hbar=rows=>{const mx=Math.max(...rows.map(r=>Math.abs(r[1])),1);return row
 const R=(l,v,c)=>`<div class="row"><span>${l}</span><b class="n"${c?` style="color:var(${c})"`:''}>${v}</b></div>`;
 const tile=(v,l,c)=>`<div class="tile"><b class="n"${c?` style="color:var(${c})"`:''}>${v}</b><small>${l}</small></div>`;
 function mchart(s){if(!s.length)return'<div class="sm">—</div>';const W=700,H=250,pl=44,pb=24,pt=14,n=s.length,mx=Math.max(...s.map(a=>Math.max(a[1],a[2])),1),st=10**Math.floor(Math.log10(mx)),step=[1,2,2.5,5,10].map(k=>k*st).find(k=>mx/k<=5),top=step*Math.ceil(mx/step),bw=(W-pl-8)/n,Y=v=>H-pb-(H-pb-pt)*v/top;let o='';
- for(let k=0;k<=Math.round(top/step);k++){const y=Y(k*step);o+=`<line x1="${pl}" x2="${W-8}" y1="${y}" y2="${y}" class="gl"/><text x="${pl-6}" y="${y+3}" text-anchor="end" class="ax">${+(k*step/1e6).toPrecision(3)}M</text>`}
+ for(let k=0;k<=Math.round(top/step);k++){const y=Y(k*step);o+=`<line x1="${pl}" x2="${W-8}" y1="${y}" y2="${y}" class="gl"/><text x="${pl-6}" y="${y+3}" text-anchor="end" class="ax">${M(k*step)}</text>`}
  s.forEach(([p,r],k)=>{const x=pl+k*bw;if(r>0)o+=`<rect x="${x+bw*.12}" y="${Y(r)}" width="${bw*.76}" height="${Y(0)-Y(r)}" fill="var(--g2)" rx="1.5"/>`;if(k==0||p.endsWith('-01'))o+=`<text x="${x}" y="${H-6}" class="ax">${p.slice(0,4)}</text>`});
  o+=`<polyline fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" points="${s.map((a,k)=>(pl+k*bw+bw/2).toFixed(1)+','+Y(Math.max(a[2],0)).toFixed(1)).join(' ')}"/>`;
  return `<svg viewBox="0 0 ${W} ${H}">${o}</svg><div class="lg"><i style="background:var(--g2)"></i>${bi('الإيراد الشهري','Monthly revenue')}<i style="background:var(--gold)"></i>${bi('المستخلصات الشهرية','Monthly invoices')}</div>`}
+const stk=p=>{const t=p.reduce((a,x)=>a+x[1],0)||1;return `<div class="stk">${p.filter(x=>x[1]>0).map(x=>`<i style="width:${x[1]/t*100}%;background:var(${x[2]})"></i>`).join('')}</div>`};
+const leg=p=>`<div class="lgd">${p.map(x=>`<span><i style="background:var(${x[2]})"></i>${x[0]} <b class="n">${x[1]}</b></span>`).join('')}</div>`;
+const donutM=(p,c)=>{const R=62,Lc=2*Math.PI*R,t=p.reduce((a,x)=>a+x[1],0);let off=0,o=`<circle cx="90" cy="90" r="${R}" class="trk" stroke-width="18" fill="none"/>`;if(t>0)p.forEach(([l,v,k])=>{if(v<=0)return;const len=v/t*Lc;o+=`<circle cx="90" cy="90" r="${R}" fill="none" stroke="var(${k})" stroke-width="18" stroke-dasharray="${len.toFixed(1)} ${(Lc-len).toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 90 90)"/>`;off+=len});return `<svg viewBox="0 0 180 180" class="dn">${o}<text x="90" y="98" text-anchor="middle" class="dv">${c}</text></svg>`};
+function vbars(a){const W=520,H=235,pl=8,pb=44,pt=24,mx=Math.max(...a.map(b=>Math.abs(b[0])),1),gw=(W-2*pl)/a.length,bw=Math.min(gw*.62,64);let o='';
+ a.forEach(([v,c,l],i)=>{const h=(H-pb-pt)*Math.abs(v)/mx,x=pl+i*gw+(gw-bw)/2,y=H-pb-h;o+=`<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(h,1)}" rx="4" fill="var(${c})"/><text x="${x+bw/2}" y="${y-6}" text-anchor="middle" class="pk">${M(v)}</text><text x="${x+bw/2}" y="${H-24}" text-anchor="middle" class="ax la">${l[0]}</text><text x="${x+bw/2}" y="${H-24}" text-anchor="middle" class="ax le">${l[1]}</text>`});
+ return `<svg viewBox="0 0 ${W} ${H}">${o}<line x1="${pl}" x2="${W-pl}" y1="${H-pb}" y2="${H-pb}" class="gl"/></svg>`}
+function cchart(s){if(!s.length)return'<div class="sm">—</div>';let a=0,b=0;const c=s.map(([p,r,i])=>[p,a+=r,b+=i]),W=700,H=250,pl=50,pb=24,pt=14,n=c.length,mx=Math.max(a,b,1),st=10**Math.floor(Math.log10(mx)),step=[1,2,2.5,5,10].map(k=>k*st).find(k=>mx/k<=5),top=step*Math.ceil(mx/step),X=k=>pl+(W-pl-10)*k/Math.max(n-1,1),Y=v=>H-pb-(H-pb-pt)*v/top;let o='';
+ for(let k=0;k<=Math.round(top/step);k++){const y=Y(k*step);o+=`<line x1="${pl}" x2="${W-10}" y1="${y}" y2="${y}" class="gl"/><text x="${pl-6}" y="${y+3}" text-anchor="end" class="ax">${M(k*step)}</text>`}
+ const ln=i=>c.map((q,k)=>X(k).toFixed(1)+','+Y(q[i]).toFixed(1)).join(' ');
+ o+=`<polygon points="${X(0)},${Y(0)} ${ln(1)} ${X(n-1)},${Y(0)}" fill="var(--g2)" opacity=".18"/><polyline fill="none" stroke="var(--g2)" stroke-width="2.2" stroke-linejoin="round" points="${ln(1)}"/><polyline fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linejoin="round" points="${ln(2)}"/>`;
+ c.forEach(([p],k)=>{if(k==0||p.endsWith('-01'))o+=`<text x="${X(k)}" y="${H-6}" class="ax">${p.slice(0,4)}</text>`});
+ return `<svg viewBox="0 0 ${W} ${H}">${o}</svg><div class="lg"><i style="background:var(--g2)"></i>${bi('الإيراد التراكمي','Cumulative revenue')}<i style="background:var(--gold)"></i>${bi('المستخلصات التراكمية','Cumulative invoices')}</div>`}
 function setRD(v){if(!v)return;RD=v;try{localStorage.setItem('rd'+D.id,JSON.stringify({f:D.upd,d:v}))}catch(e){}draw()}
 function draw(){const d=D,x=X(),e=EQ(),J=d.jobs||[],tot=J.reduce((a,b)=>a+b[1],0);
  const none=x.rpi==null&&x.cpi==null,ov=Math.max(lv(x.rpi),lv(x.cpi)),late=x.prog!=null&&x.late>.05;
  const rem=x.rem>=0?`${x.rem} ${bi('يوم','days')}`:`${bi('تجاوز بـ','Overdue by')} ${-x.rem} ${bi('يوم','days')}`;
  const types=Object.entries(e.t).map(([k,v])=>[k,v,v.w+v.s+v.r+v.t]).sort((a,b)=>b[2]+b[1].o/1e3-a[2]-a[1].o/1e3);
  const ded=d.ded||[0,0,0,0,0];
+ const parts=['w','s','r','t'].map(k=>[bi(SG[k][0],SG[k][1]),e.c[k],SG[k][2]]);
  const V=`<div class="c s12 vd" style="border-inline-start:6px solid var(${LC[ov]})"><b style="color:var(${LC[ov]})">${none?bi('لا توجد بيانات كافية','Insufficient data'):bi(LT[ov][0],LT[ov][1])}</b><span class="sm" style="margin:0">RPI <b class="n">${x.rpi==null?'—':x.rpi.toFixed(2)}</b> · CPI <b class="n">${x.cpi==null?'—':x.cpi.toFixed(2)}</b> · ${bi('الإنجاز','Progress')} <b class="n">${PC(x.prog)}</b> ${bi('مقابل الوقت المنقضي','vs elapsed time')} <b class="n">${PC(x.tp)}</b></span></div>`;
  const T=`<div class="grid">${V}<div class="sh">${bi('الأداء المالي','Financial performance')}</div>
 <div class="c s3 k"><h3>${bi('الإيراد الفعلي التراكمي','Cumulative Actual Revenue')}</h3><div class="big n">${M(d.act)}</div><div class="sm">${bi('المخطط','Planned')} <b class="n">${M(d.plan)}</b></div><span class="bd n" style="color:var(${x.var<0?'--red':'--g2'})">${x.var<0?'▼':'▲'} ${M(x.var)}</span></div>
@@ -174,14 +194,16 @@ function draw(){const d=D,x=X(),e=EQ(),J=d.jobs||[],tot=J.reduce((a,b)=>a+b[1],0
 <div class="c s4"><h3>${bi('التكلفة','Cost')}</h3>${hbar([[bi('التكلفة المخططة','Planned cost'),d.pcost,'--gold'],[bi('التكلفة الفعلية','Actual cost'),d.ac,'--red'],[bi('القيمة المكتسبة EV','Earned value EV'),x.ev||0,'--g2']])}</div>
 <div class="c s4"><h3>${bi('الموقع والترتيب','Location & Rank')}</h3><div id="mm"></div><div class="row"><span>${bi('الترتيب في المنطقة (RPI)','Area rank (RPI)')}</span><b class="n">${d.rk?'#'+d.rk+' / '+d.rn:'— / '+d.rn}</b></div></div>
 <div class="sh">${bi('الموارد','Resources')}</div>
-<div class="c s6"><h3>${bi('المعدات الفعلية','Actual Equipment')}</h3><div class="tiles">${tile(e.act,bi('إجمالي المعدات','Active fleet'))}${tile(e.c.w,bi('عاملة','Working'),'--g2')}${tile(e.c.r,bi('صيانة / عطل','Repair'),e.c.r?'--red':null)}${tile(e.ow.b,bi('مؤجرة','Rented'),'--gold')}</div></div>
-<div class="c s6"><h3>${bi('العمالة الفعلية','Actual Manpower')}</h3><div class="tiles" style="grid-template-columns:repeat(2,1fr)">${tile(tot,bi('إجمالي العمالة على المشروع','Total headcount on project'),'--g2')}${tile(J.length,bi('عدد الوظائف','Number of positions'))}</div></div></div>`;
+<div class="c s6"><h3>${bi('المعدات الفعلية','Actual Equipment')}</h3><div class="tiles">${tile(e.act,bi('إجمالي المعدات','Active fleet'))}${tile(e.c.w,bi('عاملة','Working'),'--g2')}${tile(e.c.r,bi('صيانة / عطل','Repair'),e.c.r?'--red':null)}${tile(e.ow.b,bi('مؤجرة','Rented'),'--gold')}</div><div style="margin-top:16px">${stk(parts)}</div>${leg(parts)}</div>
+<div class="c s6"><h3>${bi('العمالة الفعلية','Actual Manpower')}</h3><div class="tiles" style="grid-template-columns:repeat(2,1fr)">${tile(tot,bi('إجمالي العمالة على المشروع','Total headcount on project'),'--g2')}${tile(J.length,bi('عدد الوظائف','Number of positions'))}</div><div style="margin-top:8px">${J.slice(0,5).map(([k,n])=>`<div class="hb" style="margin:8px 0"><div class="hl"><span dir="ltr">${esc(k)}</span><b class="n">${n}</b></div><div class="tr"><i style="width:${(n/J[0][1]*100).toFixed(0)}%;background:var(--g2)"></i></div></div>`).join('')}</div></div></div>`;
  const E=`<div class="grid">${V}<div class="sh">${bi('التفاصيل المالية','Financial details')}</div>
 <div class="c s6"><h3>${bi('تفاصيل الإيراد','Revenue Details')}</h3>${R(bi('قيمة العقد','Contract value'),FM(d.cv))}${R(bi('الإيراد المخطط التراكمي','Cum. planned revenue'),FM(d.plan))}${R(bi('الإيراد الفعلي التراكمي','Cum. actual revenue'),FM(d.act))}${R(bi('الفرق','Variance'),FM(x.var),x.var<0?'--red':'--g2')}${R('RPI',x.rpi==null?'—':x.rpi.toFixed(3),LC[lv(x.rpi)])}${R('Progress',PC(x.prog))}${R(bi('المتبقي من العقد','Remaining contract value'),FM(x.remv))}${R(bi('إيراد الفترة: مخطط / فعلي','Period revenue: plan / actual'),FM(d.pp)+' / '+FM(d.pa))}${R(bi('RPI الفترة','Period RPI'),x.prpi==null?'—':x.prpi.toFixed(2))}</div>
 <div class="c s6"><h3>${bi('التكلفة والقيمة المكتسبة','Cost & Earned Value')}</h3>${R(bi('التكلفة المخططة التراكمية','Cum. planned cost'),FM(d.pcost))}${R(bi('التكلفة الفعلية التراكمية','Cum. actual cost'),FM(d.ac))}${R('EV = (Cum PC ÷ Cum PR) × Cum AR',x.ev==null?'—':FM(x.ev))}${R(bi('فرق التكلفة (EV − AC)','Cost variance (EV − AC)'),x.cv==null?'—':FM(x.cv),x.cv<0?'--red':'--g2')}${R('CPI',x.cpi==null?'—':x.cpi.toFixed(3),LC[lv(x.cpi)])}${R(bi('هامش (إيراد − تكلفة)','Margin (Rev − Cost)'),FM(x.gm)+(d.act>0?' ('+(x.gm/d.act*100).toFixed(1)+'%)':''),x.gm<0?'--red':null)}${R(bi('تكلفة الفترة: مخطط / فعلي','Period cost: plan / actual'),FM(d.pcp)+' / '+FM(d.pac))}</div>
+<div class="c s7"><h3>${bi('الإيراد والمستخلصات التراكمي','Cumulative Revenue & Invoices')}</h3>${cchart(d.ser||[])}</div>
+<div class="c s5"><h3>${bi('مخطط مقابل فعلي','Planned vs Actual')}</h3>${vbars([[d.plan,'--gold',['إيراد مخطط','Plan Rev']],[d.act,'--g2',['إيراد فعلي','Actual Rev']],[d.inv,'--g',['مستخلصات','Invoices']],[d.pcost,'--amb',['تكلفة مخططة','Plan Cost']],[x.ev||0,'--mut',['EV','EV']],[d.ac,'--red',['تكلفة فعلية','Actual Cost']]])}</div>
 <div class="c s12"><h3>${bi('اتجاه الإيراد والمستخلصات الشهري','Monthly Revenue & Invoices Trend')}</h3>${mchart(d.ser||[])}</div>
 <div class="c s6"><h3>${bi('المستخلصات والخصومات','Invoices & Deductions')}</h3>${R(bi('إجمالي المستخلصات','Total invoices'),FM(d.inv))}${R(bi('الغير مفوتر (الإيراد − المستخلصات)','Unbilled (Revenue − Invoices)'),FM(x.unb),x.unb>0?'--amb':null)}${R(bi('خصم المستخلصات','Invoice discounts'),FM(ded[0]))}${R(bi('الاستقطاعات','Deductions'),FM(ded[1]))}${R(bi('الغرامات','Penalties'),FM(ded[2]))}${R(bi('الدفعة المقدمة','Advance'),FM(ded[3]))}${R(bi('المحتجزات','Retention'),FM(ded[4]))}</div>
-<div class="c s6"><h3>${bi('حالة المعدات','Equipment Status')}</h3><div class="tiles" style="grid-template-columns:repeat(3,1fr)">${Object.keys(SG).map(k=>tile(e.c[k],bi(SG[k][0],SG[k][1]),k=='r'&&e.c[k]?'--red':null)).join('')}${tile(e.ow.a,bi('مملوكة (نشطة)','Owned (active)'))}${tile(e.ow.b,bi('مؤجرة (نشطة)','Rented (active)'))}</div></div>
+<div class="c s6"><h3>${bi('حالة المعدات','Equipment Status')}</h3><div class="eqc">${donutM(parts,e.act)}<div class="tiles" style="grid-template-columns:repeat(2,1fr)">${['w','s','r','t','o'].map(k=>tile(e.c[k],bi(SG[k][0],SG[k][1]),k=='r'&&e.c[k]?'--red':null)).join('')}${tile(e.ow.a+' / '+e.ow.b,bi('مملوكة / مؤجرة (نشطة)','Owned / Rented (active)'))}</div></div>${leg(parts)}</div>
 <div class="sh">${bi('الموارد التفصيلية','Resource details')}</div>
 <div class="c s7"><h3>${bi('المعدات حسب النوع والحالة','Equipment by Type & Status')}</h3><div class="tw"><table class="t"><tr><th>${bi('النوع','Type')}</th>${Object.keys(SG).map(k=>`<th class="a">${bi(SG[k][0],SG[k][1])}</th>`).join('')}</tr>${types.map(([k,v])=>`<tr><td dir="ltr" style="text-align:start">${esc(k)}</td>${['w','s','r','t','o'].map(c=>`<td class="a n">${v[c]||'·'}</td>`).join('')}</tr>`).join('')||'<tr><td colspan="6">—</td></tr>'}</table></div></div>
 <div class="c s5"><h3>${bi('العمالة الفعلية حسب الوظيفة','Actual Manpower by Position')}</h3><div class="tw"><table class="t"><tr><th>${bi('الوظيفة','Position')}</th><th class="a">${bi('العدد','Count')}</th><th></th></tr>${J.map(([k,n])=>`<tr><td dir="ltr" style="text-align:start">${esc(k)}</td><td class="a n">${n}</td><td><div class="mb"><i style="width:${(n/J[0][1]*100).toFixed(0)}%"></i></div></td></tr>`).join('')||'<tr><td colspan="3">—</td></tr>'}<tr><td><b>${bi('الإجمالي','Total')}</b></td><td class="a n"><b>${tot}</b></td><td></td></tr></table></div></div></div>`;
@@ -205,8 +227,8 @@ const BOOT=$('#boot').textContent,LIB=$('#lib').textContent,CSS=$('#css').textCo
 const FONT='<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap" rel="stylesheet">';
 const QR=new URLSearchParams(location.search).get('r');
 try{const l=localStorage.getItem('logo');if(l)LOGO=l}catch(e){}
-$('#hd').firstChild.innerHTML=head(bi('تقارير المشاريع','Project Reports'),'<button class="tg" onclick="tt()" title="Generator / أداة التوليد">⚙</button>','PROJECT CONTROLS · MANAGEMENT CONSOLE')+`<div class="by">${CREDIT}</div>`;
-function tt(){$('#tool').hidden=!$('#tool').hidden}
+$('#hd').firstChild.innerHTML=head(bi('تقارير المشاريع','Project Reports'),'','PROJECT CONTROLS · MANAGEMENT CONSOLE')+`<div class="by">${CREDIT}</div>`;
+const ADM=/(^|[?&])admin(=|&|$)/.test(location.search);
 let sk='';try{sk=localStorage.getItem('sk')||''}catch(e){}if(!sk){sk=[...crypto.getRandomValues(new Uint8Array(8))].map(b=>b.toString(16).padStart(2,'0')).join('');try{localStorage.setItem('sk',sk)}catch(e){}}$('#sk').value=sk;
 $('#lf').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{LOGO=r.result;try{localStorage.setItem('logo',LOGO)}catch(x){}$('#hd').querySelector('.chip img').src=LOGO};r.readAsDataURL(f)};
 const cl=c=>String(c??'').trim(),num=x=>{const v=parseFloat(String(x??'').replace(/[,%]/g,''));return isFinite(v)?v:0};
@@ -308,6 +330,6 @@ $('#go').onclick=()=>{try{
  if(QR)document.body.innerHTML='<div style="padding:60px 20px;text-align:center;color:var(--mut)">'+bi('جاري التحميل…','Loading…')+'</div>';else add([]);
  try{const r=await fetch('data.json?'+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();
   if(QR){const p=d.rows.find(x=>x.code==QR);if(!p)return bad();document.open();document.write(proj(p,'e'));document.close();return}
-  adopt(d);setData(d);$('#tool').hidden=true}catch(e){if(QR)bad()}
+  adopt(d);setData(d);$('#tool').hidden=!ADM}catch(e){if(QR)bad()}
 })();
 </script></body></html>
